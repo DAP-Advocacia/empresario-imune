@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import StructuredData from "@/components/StructuredData";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import MotionProvider from "@/components/motion/MotionProvider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -87,11 +88,17 @@ export default function RootLayout({
     <html lang="pt-BR" className={poppins.variable}>
       <head>
         <StructuredData />
+        {/* Sem JS, o conteúdo animado não pode ficar invisível. */}
+        <noscript>
+          <style>{`[data-reveal],.scene{opacity:1!important;transform:none!important}`}</style>
+        </noscript>
       </head>
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <MotionProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </MotionProvider>
       </body>
     </html>
   );

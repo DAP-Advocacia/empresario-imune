@@ -1,92 +1,93 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
+import {
+  ArrowRight,
+  BookOpen,
+  MessageCircle,
+  ShieldAlert,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import ScrollProgress from "@/components/motion/ScrollProgress";
+import { NAV_SECTIONS } from "@/data/home";
+
+const NAV_ICONS = {
+  dor: ShieldAlert,
+  metodo: Sparkles,
+  ebook: BookOpen,
+  autora: Users,
+  depoimentos: MessageCircle,
+};
+
+/**
+ * Devolve o id da seção da home que cruza a linha de leitura (35% da tela).
+ * Recalculado a cada scroll/resize: as seções se sobrepõem (margem negativa
+ * das cenas), então um IntersectionObserver com faixa estreita perdia trocas.
+ */
+function useActiveSection(enabled: boolean) {
+  const [active, setActive] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!enabled) {
+      setActive(null);
+      return;
+    }
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const line = window.innerHeight * 0.35;
+      let current: string | null = null;
+      for (const { id } of NAV_SECTIONS) {
+        const rect = document.getElementById(id)?.getBoundingClientRect();
+        if (rect && rect.top <= line && rect.bottom > line) current = id;
+      }
+      setActive(current);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, [enabled]);
+
+  return active;
+}
+
+const MOBILE_TABS = [
+  NAV_SECTIONS[0],
+  NAV_SECTIONS[1],
+  { id: "oferta", label: "Oferta", isCta: true } as const,
+  NAV_SECTIONS[2],
+  NAV_SECTIONS[3],
+];
 
 export default function Header() {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const active = useActiveSection(isHome);
+  const [scrolled, setScrolled] = useState(false);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 40));
+
   return (
     <>
-      {/* Topbar Marquee / Urgência */}
-      <aside
-        data-screen-label="Barra de topo"
-        style={{
-          background: "linear-gradient(90deg,#E87722,#F2A051,#E87722)",
-          backgroundSize: "200% 100%",
-          animation: "ei-grad 6s linear infinite",
-          padding: "9px 22px",
-          position: "relative",
-          zIndex: 60,
-        }}
-      >
-        <div
-          className="ei-wrap"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "14px",
-            flexWrap: "wrap",
-          }}
-        >
-          <span
-            style={{
-              width: "8px",
-              height: "8px",
-              background: "#0B1F3A",
-              borderRadius: "50%",
-              animation: "ei-blink 1.2s infinite",
-            }}
-          />
-          <span
-            className="ei-topbar-txt"
-            style={{
-              color: "#0B1F3A",
-              fontSize: "12.5px",
-              fontWeight: 700,
-              letterSpacing: ".04em",
-              textTransform: "uppercase",
-            }}
-          >
-            Um único processo trabalhista pode custar o lucro de um ano inteiro
-          </span>
-          <Link
-            href="/#oferta"
-            style={{
-              color: "#0B1F3A",
-              fontSize: "12.5px",
-              fontWeight: 800,
-              textDecoration: "underline",
-              textUnderlineOffset: "3px",
-            }}
-          >
-            Proteger minha empresa agora →
-          </Link>
-        </div>
-      </aside>
-
-      {/* Main Sticky Navbar */}
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 55,
-          background: "rgba(11,31,58,.88)",
-          backdropFilter: "blur(14px)",
-          borderBottom: "1px solid rgba(242,160,81,.18)",
-          padding: "12px 0",
-        }}
-      >
-        <nav
-          className="ei-wrap"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "16px",
-          }}
-          aria-label="Navegação principal"
-        >
+      <header className={`site-header${scrolled ? " is-scrolled" : ""}`}>
+        <nav className="ei-wrap site-header__nav" aria-label="Navegação principal">
           <Link
             href="/"
-            style={{ display: "flex", alignItems: "center", gap: "10px" }}
+            className="site-header__logo"
             aria-label="Página inicial do Empresário Imune"
           >
             <Image
@@ -94,55 +95,71 @@ export default function Header() {
               alt="Logotipo Empresário Imune: Prevenção Trabalhista"
               width={180}
               height={46}
-              style={{ height: "46px", width: "auto" }}
               priority
             />
           </Link>
 
-          <div
-            className="ei-nav-links"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "26px",
-              fontSize: "12px",
-              fontWeight: 600,
-              letterSpacing: ".08em",
-              textTransform: "uppercase",
-            }}
-          >
-            <Link href="/#dor" style={{ color: "#E7ECF3" }}>
-              Riscos
-            </Link>
-            <Link href="/#metodo" style={{ color: "#E7ECF3" }}>
-              Método
-            </Link>
-            <Link href="/#ebook" style={{ color: "#E7ECF3" }}>
-              E-book
-            </Link>
-            <Link href="/#autora" style={{ color: "#E7ECF3" }}>
-              Autora
-            </Link>
-            <Link href="/#depoimentos" style={{ color: "#E7ECF3" }}>
-              Provas
-            </Link>
-            <Link href="/#faq" style={{ color: "#E7ECF3" }}>
-              FAQ
-            </Link>
-            <Link href="/blog" style={{ color: "#F2A051", fontWeight: 700 }}>
-              Blog
-            </Link>
-          </div>
+          <ul className="site-header__links">
+            {NAV_SECTIONS.map((s) => (
+              <li key={s.id}>
+                <Link
+                  href={`/#${s.id}`}
+                  className={active === s.id ? "is-active" : undefined}
+                  aria-current={active === s.id ? "true" : undefined}
+                >
+                  {active === s.id && (
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="site-header__pill"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                    />
+                  )}
+                  <span>{s.label}</span>
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                href="/blog"
+                className={`is-blog${pathname.startsWith("/blog") ? " is-active" : ""}`}
+              >
+                <span>Blog</span>
+              </Link>
+            </li>
+          </ul>
 
-          <Link
-            href="/#oferta"
-            className="btn-primary"
-            style={{ fontSize: "11.5px", padding: "12px 22px" }}
-          >
-            Quero blindar
-          </Link>
         </nav>
+        <ScrollProgress />
       </header>
+
+      <nav className="bottom-nav" aria-label="Navegação inferior">
+        {MOBILE_TABS.map((tab) => {
+          if ("isCta" in tab && tab.isCta) {
+            return (
+              <Link key={tab.id} href="/#oferta" className="bottom-nav__cta">
+                <span className="bottom-nav__cta-badge" aria-hidden="true">
+                  <ArrowRight size={15} />
+                </span>
+                <span>{tab.label}</span>
+              </Link>
+            );
+          }
+          const Icon = NAV_ICONS[tab.id as keyof typeof NAV_ICONS];
+          const isActive = isHome && active === tab.id;
+          return (
+            <Link
+              key={tab.id}
+              href={`/#${tab.id}`}
+              className={`bottom-nav__item${isActive ? " is-active" : ""}`}
+              aria-current={isActive ? "true" : undefined}
+            >
+              {isActive && <span className="bottom-nav__dot" aria-hidden="true" />}
+              <Icon size={17} aria-hidden="true" />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </>
   );
 }

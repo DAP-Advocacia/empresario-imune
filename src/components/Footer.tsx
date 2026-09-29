@@ -1,177 +1,85 @@
 import Link from "next/link";
 import Image from "next/image";
 
+const NAV_LINKS = [
+  { href: "/#metodo", label: "Método de Prevenção" },
+  { href: "/#ebook", label: "Conteúdo do E-book" },
+  { href: "/#autora", label: "Sobre a Autora" },
+  { href: "/#dor", label: "Riscos Trabalhistas" },
+  { href: "/#depoimentos", label: "Depoimentos" },
+];
+
+const CONTENT_LINKS = [
+  { href: "/blog", label: "Blog Empresário Imune" },
+  {
+    href: "/blog/como-evitar-processos-trabalhistas-guia-completo",
+    label: "Guia Completo (Pilar)",
+  },
+  { href: "/politica-de-privacidade", label: "Política de Privacidade" },
+];
+
 export default function Footer() {
   return (
-    <footer
-      data-screen-label="Footer"
-      style={{
-        background: "#081729",
-        padding: "50px 0 40px",
-        borderTop: "1px solid rgba(255,255,255,.07)",
-      }}
-    >
-      <div
-        className="ei-wrap ei-footer"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.3fr 1fr 1fr 1.3fr",
-          gap: "36px",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <footer className="site-footer" data-screen-label="Footer">
+      <div className="ei-wrap">
+        <div className="site-footer__grid">
+          <div className="site-footer__brand">
             <Image
               src="/assets/images/Icone-Empresario-Imune.png"
               alt="Ícone Empresário Imune"
-              width={46}
-              height={46}
-              style={{ height: "46px", width: "auto" }}
+              width={52}
+              height={52}
             />
-          </span>
-          <p
-            style={{
-              margin: 0,
-              color: "#8FA0B8",
-              fontSize: "13px",
-              lineHeight: 1.6,
-            }}
-          >
-            Proteja seu lucro.
-            <br />
-            Proteja seu legado empresarial.
-          </p>
-          <span
-            style={{ color: "#64748B", fontSize: "11.5px", marginTop: "6px" }}
-          >
-            CNPJ: [00.000.000/0001-00 — Pendente de Validação]
-          </span>
+            <p>
+              Proteja seu lucro.
+              <br />
+              Proteja seu legado empresarial.
+            </p>
+            <span className="site-footer__meta">
+              CNPJ: [00.000.000/0001-00 — Pendente de Validação]
+            </span>
+          </div>
+
+          <nav className="site-footer__col" aria-label="Navegação do rodapé">
+            <span className="site-footer__title">Navegação</span>
+            {NAV_LINKS.map((l) => (
+              <Link key={l.href} href={l.href}>
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+
+          <nav className="site-footer__col" aria-label="Conteúdo e documentos legais">
+            <span className="site-footer__title">Conteúdo & Legal</span>
+            {CONTENT_LINKS.map((l) => (
+              <Link key={l.href} href={l.href}>
+                {l.label}
+              </Link>
+            ))}
+            <a href="/sitemap.xml">Mapa do Site (XML)</a>
+          </nav>
+
+          <div className="site-footer__col">
+            <span className="site-footer__title">Contato & Localização</span>
+            <a href="https://wa.me/5521986450256" target="_blank" rel="noopener noreferrer">
+              (21) 98645-0256
+            </a>
+            <a
+              href="https://instagram.com/empresarioimune"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              @empresarioimune
+            </a>
+            <address>
+              Av. das Américas, 3443 – Barra da Tijuca, Rio de Janeiro – RJ
+            </address>
+          </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "9px",
-            fontSize: "13px",
-          }}
-        >
-          <span
-            style={{
-              fontWeight: 800,
-              color: "#F7F3EA",
-              fontSize: "11px",
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-            }}
-          >
-            Navegação
-          </span>
-          <Link href="/#dor" style={{ color: "#C7D0DE" }}>
-            Riscos Trabalhistas
-          </Link>
-          <Link href="/#metodo" style={{ color: "#C7D0DE" }}>
-            Método de Prevenção
-          </Link>
-          <Link href="/#ebook" style={{ color: "#C7D0DE" }}>
-            Conteúdo do E-book
-          </Link>
-          <Link href="/#autora" style={{ color: "#C7D0DE" }}>
-            Sobre a Autora
-          </Link>
-          <Link href="/#depoimentos" style={{ color: "#C7D0DE" }}>
-            Depoimentos
-          </Link>
-          <Link href="/#faq" style={{ color: "#C7D0DE" }}>
-            Perguntas Frequentes
-          </Link>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "9px",
-            fontSize: "13px",
-          }}
-        >
-          <span
-            style={{
-              fontWeight: 800,
-              color: "#F7F3EA",
-              fontSize: "11px",
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-            }}
-          >
-            Conteúdo & Legal
-          </span>
-          <Link href="/blog" style={{ color: "#C7D0DE" }}>
-            Blog Empresário Imune
-          </Link>
-          <Link
-            href="/blog/como-evitar-processos-trabalhistas-guia-completo"
-            style={{ color: "#C7D0DE" }}
-          >
-            Guia Completo (Pilar)
-          </Link>
-          <Link href="/politica-de-privacidade" style={{ color: "#C7D0DE" }}>
-            Política de Privacidade
-          </Link>
-          <a href="/sitemap.xml" style={{ color: "#C7D0DE" }}>
-            Mapa do Site (XML)
-          </a>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "9px",
-            fontSize: "13px",
-          }}
-        >
-          <span
-            style={{
-              fontWeight: 800,
-              color: "#F7F3EA",
-              fontSize: "11px",
-              letterSpacing: ".14em",
-              textTransform: "uppercase",
-            }}
-          >
-            Contato & Localização
-          </span>
-          <a
-            href="https://wa.me/5521986450256"
-            style={{ color: "#C7D0DE" }}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            (21) 98645-0256
-          </a>
-          <a
-            href="https://instagram.com/empresarioimune"
-            style={{ color: "#C7D0DE" }}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            @empresarioimune
-          </a>
-          <span
-            style={{
-              color: "#8FA0B8",
-              fontSize: "12px",
-              lineHeight: 1.6,
-            }}
-          >
-            Av. das Américas, 3443 – Barra da Tijuca, Rio de Janeiro – RJ
-          </span>
-          <span
-            style={{ color: "#64748B", fontSize: "11.5px", marginTop: "6px" }}
-          >
-            © 2026 Empresário Imune. Todos os direitos reservados.
-          </span>
+        <div className="site-footer__bottom">
+          <span>© 2026 Empresário Imune. Todos os direitos reservados.</span>
+          <span>Conteúdo informativo — não substitui consulta jurídica individual.</span>
         </div>
       </div>
     </footer>
