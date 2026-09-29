@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://empresarioimune.com.br/sitemap.xml
