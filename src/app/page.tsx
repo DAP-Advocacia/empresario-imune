@@ -9,6 +9,7 @@ import {
   MessageSquareWarning,
   Quote,
   ScrollText,
+  Shield,
   ShieldCheck,
   Star,
   UserX,
@@ -42,7 +43,7 @@ const RISK_ICONS = {
 function Eyebrow({ children, light }: { children: React.ReactNode; light?: boolean }) {
   return (
     <span className={`eyebrow${light ? " eyebrow--light" : ""}`}>
-      <span className="eyebrow__dot" />
+      <Shield size={12} className="eyebrow__icon" aria-hidden="true" />
       {children}
     </span>
   );

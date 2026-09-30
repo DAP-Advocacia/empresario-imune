@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Shield } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade | Empresário Imune",
@@ -22,7 +23,10 @@ export default function PoliticaPrivacidadePage() {
           / <span style={{ color: "#3C4A5E" }}>Política de Privacidade</span>
         </nav>
 
-        <span className="eyebrow-light">Transparência e Segurança</span>
+        <span className="eyebrow-light">
+          <Shield size={12} aria-hidden="true" />
+          Transparência e Segurança
+        </span>
         <h1
           style={{
             margin: "12px 0 24px",

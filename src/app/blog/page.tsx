@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Shield } from "lucide-react";
 import { getAllBlogPosts } from "@/data/blog-posts";
 
 export const metadata: Metadata = {
@@ -28,7 +29,10 @@ export default function BlogHubPage() {
       <div className="ei-wrap">
         {/* Header do Blog */}
         <div style={{ textAlign: "center", maxWidth: "800px", margin: "0 auto 48px" }}>
-          <span className="eyebrow-light">Artigos & Orientações Práticas</span>
+          <span className="eyebrow-light">
+            <Shield size={12} aria-hidden="true" />
+            Artigos & Orientações Práticas
+          </span>
           <h1
             style={{
               margin: "12px 0 16px",
