@@ -1,0 +1,56 @@
+{
+  "project": {
+    "name": "Empresário Imune",
+    "domain": "https://empresarioimune.com.br",
+    "description": "Portal de vendas e blog de compliance e prevenção de passivo trabalhista para empresários",
+    "architecture": "Headless WordPress CMS + Next.js App Router (SSG / ISR)"
+  },
+  "wordpress": {
+    "cmsUrl": "https://admin.empresarioimune.com.br",
+    "adminLoginUrl": "https://admin.empresarioimune.com.br/wp-admin",
+    "loginFallbackUrl": "https://admin.empresarioimune.com.br/wp-login.php",
+    "apiEndpoints": {
+      "posts": "https://admin.empresarioimune.com.br/wp-json/wp/v2/posts",
+      "categories": "https://admin.empresarioimune.com.br/wp-json/wp/v2/categories",
+      "media": "https://admin.empresarioimune.com.br/wp-json/wp/v2/media"
+    },
+    "redirects": [
+      {
+        "source": "/admin",
+        "destination": "https://admin.empresarioimune.com.br/wp-admin"
+      },
+      {
+        "source": "/login",
+        "destination": "https://admin.empresarioimune.com.br/wp-login.php"
+      }
+    ]
+  },
+  "cachingAndPerformance": {
+    "strategy": "ISR (Incremental Static Regeneration)",
+    "revalidateSeconds": 60,
+    "dynamicParams": true,
+    "fallbackMechanism": "Em caso de instabilidade ou ausência de posts na API, o sistema serve os 9 artigos pré-estruturados de SEO localizados em src/data/blog-posts.ts."
+  },
+  "security": {
+    "apiAccess": "Read-Only (somente leitura pública de posts publicados via método GET)",
+    "dataIsolation": "O WordPress atua apenas como backend headless; visitantes do site interagem exclusivamente com o frontend estático Next.js sem expor banco de dados ou arquivos do WordPress",
+    "draftProtection": "Rascunhos e posts não publicados permanecem restritos e inacessíveis para a API pública",
+    "recommendedHardening": [
+      "Desativação de enumeração pública de usuários em /wp-json/wp/v2/users",
+      "Uso de senhas fortes e 2FA para perfis de Editor e Administrador",
+      "Instalação de plugin de limite de tentativas de login (Limit Login Attempts)"
+    ]
+  },
+  "userRoles": {
+    "editor": {
+      "recommended": true,
+      "permissions": "Criar, editar, publicar e gerenciar todos os posts e categorias do blog"
+    },
+    "author": {
+      "permissions": "Escrever e publicar apenas os próprios posts"
+    },
+    "contributor": {
+      "permissions": "Escrever rascunhos de artigos que exigem aprovação de um editor antes da publicação"
+    }
+  }
+}

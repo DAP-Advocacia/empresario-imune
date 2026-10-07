@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield } from "lucide-react";
-import { getAllBlogPosts } from "@/data/blog-posts";
+import { getWordPressPosts } from "@/lib/wordpress";
+
+export const revalidate = 60; // Incremental Static Regeneration a cada 60s
 
 export const metadata: Metadata = {
   title: "Blog de Compliance e Prevenção Trabalhista | Empresário Imune",
@@ -19,10 +21,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogHubPage() {
-  const posts = getAllBlogPosts();
+export default async function BlogHubPage() {
+  const posts = await getWordPressPosts();
   const pillarPost = posts.find((p) => p.isPillar) || posts[0];
-  const supportPosts = posts.filter((p) => !p.isPillar);
+  const supportPosts = posts.filter((p) => p.slug !== pillarPost?.slug);
 
   return (
     <div style={{ background: "#F3EEE5", color: "#0B1F3A", padding: "60px 0 90px" }}>
@@ -102,81 +104,85 @@ export default function BlogHubPage() {
           </div>
         )}
 
-        {/* Grade dos 8 Artigos de Apoio */}
-        <div style={{ marginBottom: "28px" }}>
-          <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#0B1F3A", marginBottom: "24px" }}>
-            Artigos Recentes de Suporte
-          </h2>
-        </div>
+        {/* Grade dos Artigos de Apoio */}
+        {supportPosts.length > 0 && (
+          <>
+            <div style={{ marginBottom: "28px" }}>
+              <h2 style={{ fontSize: "24px", fontWeight: 800, color: "#0B1F3A", marginBottom: "24px" }}>
+                Artigos Recentes de Suporte
+              </h2>
+            </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: "24px",
-            marginBottom: "64px",
-          }}
-        >
-          {supportPosts.map((post) => (
-            <article
-              key={post.slug}
-              className="card-interactive-light"
+            <div
               style={{
-                background: "#FBF8F1",
-                border: "1px solid #E4DCCB",
-                borderRadius: "20px",
-                padding: "30px 24px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                gap: "18px",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+                gap: "24px",
+                marginBottom: "64px",
               }}
             >
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                  <span
-                    style={{
-                      color: "#D96F14",
-                      fontSize: "11px",
-                      fontWeight: 800,
-                      letterSpacing: ".08em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {post.category}
-                  </span>
-                  <span style={{ color: "#8FA0B8", fontSize: "11.5px" }}>{post.readTime}</span>
-                </div>
-
-                <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#0B1F3A", margin: "0 0 12px", lineHeight: 1.4 }}>
-                  <Link href={`/blog/${post.slug}`} style={{ color: "#0B1F3A" }}>
-                    {post.title}
-                  </Link>
-                </h3>
-
-                <p style={{ color: "#3C4A5E", fontSize: "13.5px", lineHeight: 1.65, margin: 0 }}>
-                  {post.summary}
-                </p>
-              </div>
-
-              <div style={{ paddingTop: "14px", borderTop: "1px solid #E4DCCB" }}>
-                <Link
-                  href={`/blog/${post.slug}`}
+              {supportPosts.map((post) => (
+                <article
+                  key={post.slug}
+                  className="card-interactive-light"
                   style={{
-                    color: "#D96F14",
-                    fontWeight: 700,
-                    fontSize: "13px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
+                    background: "#FBF8F1",
+                    border: "1px solid #E4DCCB",
+                    borderRadius: "20px",
+                    padding: "30px 24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: "18px",
                   }}
                 >
-                  Continuar lendo →
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <span
+                        style={{
+                          color: "#D96F14",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          letterSpacing: ".08em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {post.category}
+                      </span>
+                      <span style={{ color: "#8FA0B8", fontSize: "11.5px" }}>{post.readTime}</span>
+                    </div>
+
+                    <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#0B1F3A", margin: "0 0 12px", lineHeight: 1.4 }}>
+                      <Link href={`/blog/${post.slug}`} style={{ color: "#0B1F3A" }}>
+                        {post.title}
+                      </Link>
+                    </h3>
+
+                    <p style={{ color: "#3C4A5E", fontSize: "13.5px", lineHeight: 1.65, margin: 0 }}>
+                      {post.summary}
+                    </p>
+                  </div>
+
+                  <div style={{ paddingTop: "14px", borderTop: "1px solid #E4DCCB" }}>
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      style={{
+                        color: "#D96F14",
+                        fontWeight: 700,
+                        fontSize: "13px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      Continuar lendo →
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* CTA Box para a Oferta do E-book */}
         <div className="blog-cta-box">

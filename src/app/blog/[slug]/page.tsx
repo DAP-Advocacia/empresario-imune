@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BLOG_POSTS, getBlogPostBySlug, getAllBlogPosts } from "@/data/blog-posts";
+import { getWordPressPosts, getWordPressPostBySlug } from "@/lib/wordpress";
+
+export const revalidate = 60; // Incremental Static Regeneration a cada 60s
+export const dynamicParams = true;
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return BLOG_POSTS.map((post) => ({
+  const posts = await getWordPressPosts();
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getWordPressPostBySlug(slug);
 
   if (!post) {
     return {
@@ -38,51 +42,54 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.metaDescription,
       siteName: "Empresário Imune",
       publishedTime: post.publishDate,
-      authors: ["Empresário Imune"],
+      authors: [post.authorName || "Empresário Imune"],
+      images: post.featuredImage ? [{ url: post.featuredImage }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: post.metaTitle,
       description: post.metaDescription,
+      images: post.featuredImage ? [post.featuredImage] : undefined,
     },
   };
 }
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const post = await getWordPressPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
-  const allPosts = getAllBlogPosts();
+  const allPosts = await getWordPressPosts();
   const otherPosts = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
   const pillarPost = allPosts.find((p) => p.isPillar);
 
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": post.title,
-    "description": post.metaDescription,
-    "inLanguage": "pt-BR",
-    "mainEntityOfPage": {
+    headline: post.title,
+    description: post.metaDescription,
+    image: post.featuredImage,
+    inLanguage: "pt-BR",
+    mainEntityOfPage: {
       "@type": "WebPage",
       "@id": `https://empresarioimune.com.br/blog/${post.slug}`,
     },
-    "datePublished": post.publishDate,
-    "dateModified": post.publishDate,
-    "author": {
+    datePublished: post.publishDate,
+    dateModified: post.publishDate,
+    author: {
       "@type": "Person",
-      "name": "[Nome da Autora - Validação Pendente]",
-      "jobTitle": "Advogada Especialista em Direito do Trabalho Empresarial",
+      name: post.authorName || "Advogada Especialista em Direito do Trabalho Empresarial",
+      jobTitle: "Advogada Especialista em Direito do Trabalho Empresarial",
     },
-    "publisher": {
+    publisher: {
       "@type": "Organization",
-      "name": "Empresário Imune",
-      "logo": {
+      name: "Empresário Imune",
+      logo: {
         "@type": "ImageObject",
-        "url": "https://empresarioimune.com.br/assets/images/Logo-Empresario-Imune-Branco.png",
+        url: "https://empresarioimune.com.br/assets/images/Logo-Empresario-Imune-Branco.png",
       },
     },
   };
@@ -141,6 +148,9 @@ export default async function BlogPostPage({ params }: Props) {
             </span>
           )}
           <span style={{ color: "#8FA0B8", fontSize: "13px" }}>{post.readTime}</span>
+          {post.publishDate && (
+            <span style={{ color: "#8FA0B8", fontSize: "13px" }}>• {post.publishDate}</span>
+          )}
         </div>
 
         {/* Título Principal */}
@@ -171,7 +181,18 @@ export default async function BlogPostPage({ params }: Props) {
           {post.summary}
         </p>
 
-        {/* Aviso de Conteúdo Rascunho / Conformidade */}
+        {/* Imagem Destacada (se houver no WordPress) */}
+        {post.featuredImage && (
+          <div style={{ marginBottom: "32px", borderRadius: "16px", overflow: "hidden" }}>
+            <img
+              src={post.featuredImage}
+              alt={post.title}
+              style={{ width: "100%", height: "auto", maxHeight: "460px", objectFit: "cover", display: "block" }}
+            />
+          </div>
+        )}
+
+        {/* Aviso de Conformidade OAB */}
         <div
           style={{
             background: "rgba(232, 119, 34, 0.08)",
@@ -183,7 +204,7 @@ export default async function BlogPostPage({ params }: Props) {
             marginBottom: "36px",
           }}
         >
-          <strong>Aviso de Estrutura & Validação:</strong> Este artigo faz parte da estrutura de SEO do Empresário Imune. O conteúdo está formatado como rascunho de alta relevância técnica e deve ser revisado/validado pela advogada responsável antes de campanhas ativas, conforme o Provimento 205/2021 da OAB.
+          <strong>Aviso Institucional & Informativo:</strong> Conteúdo informativo e preventivo em conformidade com o Provimento 205/2021 do Conselho Federal da OAB.
         </div>
 
         {/* Link para o Artigo Pilar caso não seja ele */}
@@ -226,14 +247,21 @@ export default async function BlogPostPage({ params }: Props) {
 
         {/* Conteúdo do Artigo */}
         <div className="blog-content">
-          {post.sections.map((section, idx) => (
-            <div key={idx}>
-              <h2>{section.heading}</h2>
-              <div style={{ whiteSpace: "pre-line" }}>
-                <p>{section.content}</p>
+          {post.contentHtml ? (
+            <div
+              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+              style={{ fontSize: "16px", lineHeight: "1.8", color: "#2B3748" }}
+            />
+          ) : (
+            post.sections?.map((section, idx) => (
+              <div key={idx}>
+                <h2>{section.heading}</h2>
+                <div style={{ whiteSpace: "pre-line" }}>
+                  <p>{section.content}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* CTA para a Página de Vendas */}
@@ -266,39 +294,41 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
 
         {/* Artigos Relacionados */}
-        <div style={{ marginTop: "56px", paddingTop: "32px", borderTop: "1px solid #E4DCCB" }}>
-          <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#0B1F3A", marginBottom: "20px" }}>
-            Artigos Relacionados
-          </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px" }}>
-            {otherPosts.map((op) => (
-              <div
-                key={op.slug}
-                style={{
-                  background: "#FBF8F1",
-                  border: "1px solid #E4DCCB",
-                  borderRadius: "14px",
-                  padding: "18px",
-                }}
-              >
-                <span style={{ color: "#D96F14", fontSize: "11px", fontWeight: 700, textTransform: "uppercase" }}>
-                  {op.category}
-                </span>
-                <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#0B1F3A", margin: "6px 0 10px", lineHeight: 1.4 }}>
-                  <Link href={`/blog/${op.slug}`} style={{ color: "#0B1F3A" }}>
-                    {op.title}
-                  </Link>
-                </h4>
-                <Link
-                  href={`/blog/${op.slug}`}
-                  style={{ color: "#D96F14", fontSize: "12.5px", fontWeight: 700 }}
+        {otherPosts.length > 0 && (
+          <div style={{ marginTop: "56px", paddingTop: "32px", borderTop: "1px solid #E4DCCB" }}>
+            <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#0B1F3A", marginBottom: "20px" }}>
+              Artigos Relacionados
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px" }}>
+              {otherPosts.map((op) => (
+                <div
+                  key={op.slug}
+                  style={{
+                    background: "#FBF8F1",
+                    border: "1px solid #E4DCCB",
+                    borderRadius: "14px",
+                    padding: "18px",
+                  }}
                 >
-                  Ler artigo →
-                </Link>
-              </div>
-            ))}
+                  <span style={{ color: "#D96F14", fontSize: "11px", fontWeight: 700, textTransform: "uppercase" }}>
+                    {op.category}
+                  </span>
+                  <h4 style={{ fontSize: "15px", fontWeight: 700, color: "#0B1F3A", margin: "6px 0 10px", lineHeight: 1.4 }}>
+                    <Link href={`/blog/${op.slug}`} style={{ color: "#0B1F3A" }}>
+                      {op.title}
+                    </Link>
+                  </h4>
+                  <Link
+                    href={`/blog/${op.slug}`}
+                    style={{ color: "#D96F14", fontSize: "12.5px", fontWeight: 700 }}
+                  >
+                    Ler artigo →
+                  </Link>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

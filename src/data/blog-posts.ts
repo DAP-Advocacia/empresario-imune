@@ -9,7 +9,10 @@ export interface BlogPost {
   publishDate: string;
   isPillar: boolean;
   category: string;
-  sections: {
+  featuredImage?: string;
+  authorName?: string;
+  contentHtml?: string;
+  sections?: {
     heading: string;
     content: string;
   }[];
